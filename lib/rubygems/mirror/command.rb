@@ -44,7 +44,9 @@ Multiple sources and destinations may be specified.
 
       mirror = Gem::Mirror.new(get_from, save_to)
       
-      say "Fetching: #{mirror.from(Gem::Mirror::SPECS_FILE_Z)}"
+      Gem::Mirror::SPECS_FILES.each do |sf|
+        say "Fetching: #{mirror.from(sf)}"
+      end
       mirror.update_specs
 
       say "Total gems: #{mirror.gems.size}"

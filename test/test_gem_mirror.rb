@@ -15,8 +15,9 @@ class TestGemMirror < MiniTest::Unit::TestCase
     with_server do
       mirror = Gem::Mirror.new(*opts)
       mirror.update_specs
-      assert File.exists?(mirror_path + "/#{Gem::Mirror::SPECS_FILE_Z}")
-      assert File.exists?(mirror_path + "/#{Gem::Mirror::SPECS_FILE_Z}")
+      Gem::Mirror::SPECS_FILES.each do |sf|
+        assert File.exists?(mirror_path + "/#{sf}.gz")
+      end
     end
   end
 
