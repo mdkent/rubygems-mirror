@@ -4,18 +4,23 @@ require 'fileutils'
 class Gem::Mirror
   autoload :Fetcher, 'rubygems/mirror/fetcher'
   autoload :Pool, 'rubygems/mirror/pool'
+  attr_reader :specs_files
 
-  SPECS_FILES = [ "specs.#{Gem.marshal_version}", "prerelease_specs.#{Gem.marshal_version}" ]
+  RELEASE_SPECS_FILES = [ "specs.#{Gem.marshal_version}" ]
+  PRERELEASE_SPECS_FILES = [ "prerelease_specs.#{Gem.marshal_version}" ]
+  PRE_AND_RELEASE_SPECS_FILES = RELEASE_SPECS_FILES + PRERELEASE_SPECS_FILES
 
   DEFAULT_URI = 'http://production.cf.rubygems.org/'
   DEFAULT_TO = File.join(Gem.user_home, '.gem', 'mirror')
 
   RUBY = 'ruby'
 
-  def initialize(from = DEFAULT_URI, to = DEFAULT_TO, parallelism = 10)
+  def initialize(from = DEFAULT_URI, to = DEFAULT_TO, parallelism = 10, prerelease = false)
     @from, @to = from, to
     @fetcher = Fetcher.new
     @pool = Pool.new(parallelism)
+    @prerelease = prerelease
+    @specs_files = prerelease ? PRE_AND_RELEASE_SPECS_FILES : RELEASE_SPECS_FILES
   end
 
   def from(*args)
@@ -27,7 +32,7 @@ class Gem::Mirror
   end
 
   def update_specs
-    SPECS_FILES.each do |sf|
+    @specs_files.each do |sf|
       sfz = "#{sf}.gz"
 
       specz = to(sfz)
@@ -39,7 +44,7 @@ class Gem::Mirror
   def gems
     gems = []
     
-    SPECS_FILES.each do |sf|
+    @specs_files.each do |sf|
       update_specs unless File.exists?(to(sf))
 
       gems += Marshal.load(File.read(to(sf)))
